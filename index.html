@@ -130,9 +130,106 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #12121f; color: #
 @media(max-width:768px){
   .sidebar{width:175px} .main{margin-left:175px;padding:14px} .res-details{grid-template-columns:repeat(2,1fr)}
 }
+
+/* ===== MOBILE (≤600px) ===== */
 @media(max-width:600px){
-  .sidebar{display:none} .main{margin-left:0}
+  /* Cache sidebar, affiche barre mobile */
+  .sidebar { display:none; }
+  .main { margin-left:0; padding:12px 12px 90px 12px; max-width:100vw; }
+
+  /* Barre de progression mobile en haut */
+  .mobile-topbar {
+    display:flex !important;
+    position:fixed; top:0; left:0; right:0; z-index:200;
+    background:#0c0c1a;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+    padding:10px 14px 8px;
+    flex-direction:column;
+    gap:6px;
+  }
+  .mobile-topbar-row {
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .mobile-q-label { font-size:.8em; color:#aaa; font-weight:600; }
+  .mobile-score-label { font-size:.8em; color:#f39c12; font-weight:800; }
+  .mobile-bar-wrap { background:rgba(255,255,255,0.08); border-radius:10px; height:5px; overflow:hidden; }
+  .mobile-bar-fill { height:100%; background:linear-gradient(90deg,#f39c12,#e74c3c); border-radius:10px; transition:width .4s; }
+
+  /* Décaler le contenu sous la topbar */
+  .main { padding-top: 80px !important; }
+
+  /* Accueil mobile */
+  #home-screen { padding:20px 16px; justify-content:flex-start; padding-top:40px; }
+  .logo-home { font-size:55px; margin-bottom:12px; }
+  .home-title { font-size:1.9em; }
+  .home-sub { font-size:.88em; margin-bottom:20px; }
+  .home-cards { gap:10px; margin-bottom:22px; }
+  .hcard { padding:14px 18px; border-radius:12px; }
+  .hcard-n { font-size:1.7em; }
+  .hcard-l { font-size:.72em; }
+  .btn-start { padding:16px 40px; font-size:1.05em; width:100%; max-width:320px; }
+  .rules-box { padding:16px; max-width:100%; }
+  .rules-box p { font-size:.83em; line-height:1.8; }
+
+  /* Question card mobile */
+  .q-header { flex-direction:column; align-items:flex-start; gap:8px; margin-bottom:12px; }
+  .q-num-label { font-size:.82em; }
+  .cat-badge { font-size:.72em; padding:4px 11px; }
+  .q-card { padding:16px; border-radius:14px; margin-bottom:14px; }
+  .q-img { font-size:2.8em; padding:16px; margin-bottom:12px; }
+  .q-text { font-size:1.05em; line-height:1.6; }
+
+  /* Réponses mobile — grands boutons tactiles */
+  .answers { gap:9px; }
+  .ans-btn {
+    padding:14px 14px;
+    border-radius:12px;
+    font-size:.93em;
+    gap:11px;
+    min-height:52px;
+  }
+  .ans-btn:hover:not(:disabled) { transform:none; } /* pas d'effet hover sur tactile */
+  .ans-letter { width:32px; height:32px; min-width:32px; font-size:.82em; }
+
+  /* Feedback */
+  .feedback { font-size:.88em; padding:12px 14px; border-radius:11px; }
+
+  /* Bouton suivant */
+  .btn-next {
+    position:fixed; bottom:0; left:0; right:0;
+    border-radius:0;
+    margin-top:0;
+    padding:18px;
+    font-size:1.05em;
+    z-index:150;
+    border-top:1px solid rgba(255,255,255,0.1);
+  }
+
+  /* Résultats mobile */
+  .res-wrap { padding:16px; align-items:flex-start; padding-top:20px; }
+  .res-card { padding:24px 16px; border-radius:18px; }
+  .res-emoji { font-size:55px; margin-bottom:12px; }
+  .res-title { font-size:1.5em; }
+  .res-sub { font-size:.85em; margin-bottom:20px; }
+  .score-circle { width:140px; height:140px; margin-bottom:20px; }
+  .score-inner { width:122px; height:122px; }
+  .score-big { font-size:2.3em; }
+  .res-details { grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:20px; }
+  .res-detail { padding:12px 6px; border-radius:10px; }
+  .rd-n { font-size:1.4em; }
+  .rd-l { font-size:.65em; }
+  .res-msg { font-size:.85em; padding:14px; }
+  .res-btns { flex-direction:column; gap:10px; }
+  .btn-retry, .btn-home { min-width:unset; width:100%; padding:14px; font-size:.95em; }
+  .rev-item { padding:11px; }
+  .rev-q { font-size:.82em; }
+  .rev-yours, .rev-right { font-size:.76em; }
 }
+
+/* Desktop: cacher les éléments mobile */
+.mobile-topbar { display:none; }
+.mobile-bar-fill { width:0%; }
+
 ::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-thumb{background:rgba(243,156,18,.3);border-radius:5px}
 </style>
 </head>
@@ -163,6 +260,18 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #12121f; color: #
 
 <!-- ======= QUIZ ======= -->
 <div id="quiz-screen">
+
+  <!-- Barre top mobile -->
+  <div class="mobile-topbar" id="mobile-topbar">
+    <div class="mobile-topbar-row">
+      <span class="mobile-q-label">🏍️ Question <span id="mob-q-n">1</span>/50</span>
+      <span class="mobile-score-label">✅ <span id="mob-score">0</span>/50</span>
+    </div>
+    <div class="mobile-bar-wrap">
+      <div class="mobile-bar-fill" id="mob-bar" style="width:0%"></div>
+    </div>
+  </div>
+
   <div class="quiz-wrap">
     <div class="sidebar">
       <div class="sb-head">
@@ -482,11 +591,14 @@ function showQ() {
   fb.style.display = 'none'; fb.className = 'feedback';
   document.getElementById('btn-next').style.display = 'none';
 
-  // Progress
+  // Progress sidebar + mobile
   const pct = Math.round((currentIdx / 50) * 100);
   document.getElementById('sb-bar').style.width = pct + '%';
   document.getElementById('sb-prog').textContent = `Question ${currentIdx + 1} / 50`;
   document.getElementById('sb-score').textContent = score;
+  document.getElementById('mob-q-n').textContent = currentIdx + 1;
+  document.getElementById('mob-score').textContent = score;
+  document.getElementById('mob-bar').style.width = pct + '%';
 
   // Grid
   for (let i = 0; i < 50; i++) {
@@ -530,6 +642,7 @@ function pick(idx) {
   if (gc) { gc.classList.remove('cur'); gc.classList.add(isOk ? 'ok' : 'ko'); gc.textContent = ['A','B','C','D'][q.correct]; }
 
   document.getElementById('sb-score').textContent = score;
+  document.getElementById('mob-score').textContent = score;
   const btnN = document.getElementById('btn-next');
   btnN.style.display = 'block';
   btnN.textContent = currentIdx < 49 ? 'Question suivante →' : '🏁 Voir mes résultats';
