@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Moto Belgique — Entraînement</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #12121f; color: #eee; min-height: 100vh; }
+
+/* ===== ACCUEIL ===== */
+#home-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:30px; text-align:center; }
+.logo-home { font-size:80px; margin-bottom:20px; animation: pulse 2.5s infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+.home-title { font-size:2.8em; font-weight:900; background:linear-gradient(135deg,#f39c12,#e74c3c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:8px; }
+.home-sub { color:#888; font-size:1.05em; margin-bottom:35px; }
+.home-cards { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; margin-bottom:35px; }
+.hcard { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:20px 28px; text-align:center; }
+.hcard-n { font-size:2.2em; font-weight:900; color:#f39c12; }
+.hcard-l { font-size:0.78em; color:#888; margin-top:4px; }
+.btn-start { background:linear-gradient(135deg,#f39c12,#e74c3c); color:#fff; border:none; padding:18px 55px; font-size:1.2em; font-weight:800; border-radius:50px; cursor:pointer; transition:all .3s; box-shadow:0 5px 25px rgba(243,156,18,.4); letter-spacing:1px; }
+.btn-start:hover { transform:translateY(-3px); box-shadow:0 10px 35px rgba(243,156,18,.6); }
+.rules-box { margin-top:28px; background:rgba(255,255,255,0.04); border-radius:15px; padding:20px 28px; max-width:500px; text-align:left; }
+.rules-box h3 { color:#f39c12; margin-bottom:10px; font-size:.95em; }
+.rules-box p { color:#aaa; font-size:.88em; line-height:1.9; }
+
+/* ===== QUIZ ===== */
+#quiz-screen { display:none; }
+.quiz-wrap { display:flex; min-height:100vh; }
+
+/* Sidebar */
+.sidebar { width:215px; background:#0c0c1a; padding:18px 13px; position:fixed; top:0; left:0; height:100vh; overflow-y:auto; z-index:100; border-right:1px solid rgba(255,255,255,0.05); }
+.sb-head { text-align:center; margin-bottom:18px; padding-bottom:13px; border-bottom:1px solid rgba(255,255,255,0.08); }
+.sb-logo { font-size:28px; }
+.sb-title { font-size:.85em; font-weight:800; color:#f39c12; letter-spacing:1px; }
+.sb-cat { font-size:.7em; color:#666; }
+.sb-prog-label { font-size:.68em; color:#666; text-transform:uppercase; letter-spacing:1px; margin-bottom:7px; }
+.sb-bar-wrap { background:rgba(255,255,255,0.08); border-radius:10px; height:7px; margin-bottom:6px; overflow:hidden; }
+.sb-bar { height:100%; background:linear-gradient(90deg,#f39c12,#e74c3c); border-radius:10px; transition:width .4s; }
+.sb-prog-txt { font-size:.7em; color:#888; text-align:center; margin-bottom:14px; }
+.sb-score { background:rgba(255,255,255,0.04); border-radius:10px; padding:10px; text-align:center; margin-bottom:14px; }
+.sb-score-n { font-size:1.7em; font-weight:900; }
+.sb-score-l { font-size:.68em; color:#888; }
+.sb-grid-label { font-size:.68em; color:#666; text-transform:uppercase; letter-spacing:1px; margin-bottom:7px; }
+.q-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:3px; }
+.gc { aspect-ratio:1; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:.52em; font-weight:700; background:rgba(255,255,255,0.06); color:#444; }
+.gc.cur { background:#f39c12!important; color:#fff!important; animation:blink 1s infinite; }
+.gc.ok { background:#27ae60; color:#fff; }
+.gc.ko { background:#e74c3c; color:#fff; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.55} }
+.btn-quit { width:100%; margin-top:14px; background:rgba(231,76,60,.15); border:1px solid rgba(231,76,60,.35); color:#e74c3c; padding:9px; border-radius:8px; cursor:pointer; font-size:.78em; transition:all .3s; }
+.btn-quit:hover { background:rgba(231,76,60,.3); }
+
+/* Main */
+.main { margin-left:215px; flex:1; padding:28px; max-width:calc(100vw - 215px); }
+.q-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+.q-num-label { font-size:.88em; color:#777; }
+.q-num-label span { color:#f39c12; font-weight:800; font-size:1.2em; }
+.cat-badge { background:rgba(243,156,18,.12); border:1px solid rgba(243,156,18,.3); color:#f39c12; padding:5px 13px; border-radius:20px; font-size:.78em; font-weight:700; }
+.q-card { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:18px; padding:26px; margin-bottom:20px; }
+.q-img { font-size:3.5em; text-align:center; margin-bottom:16px; background:linear-gradient(135deg,rgba(243,156,18,.08),rgba(231,76,60,.08)); border:2px dashed rgba(243,156,18,.25); border-radius:12px; padding:22px; }
+.q-text { font-size:1.18em; line-height:1.65; color:#f0f0f0; font-weight:500; }
+.answers { display:flex; flex-direction:column; gap:11px; }
+.ans-btn { display:flex; align-items:center; gap:14px; padding:16px 20px; background:rgba(255,255,255,0.03); border:2px solid rgba(255,255,255,0.09); border-radius:13px; cursor:pointer; color:#ddd; font-size:.98em; line-height:1.4; text-align:left; transition:all .22s; }
+.ans-btn:hover:not(:disabled) { background:rgba(243,156,18,.09); border-color:rgba(243,156,18,.45); transform:translateX(4px); }
+.ans-letter { width:34px; height:34px; min-width:34px; border-radius:50%; background:rgba(255,255,255,0.09); display:flex; align-items:center; justify-content:center; font-weight:900; font-size:.88em; }
+.ans-btn.sel-ok { background:rgba(39,174,96,.18); border-color:#27ae60; }
+.ans-btn.sel-ok .ans-letter { background:#27ae60; color:#fff; }
+.ans-btn.sel-ko { background:rgba(231,76,60,.18); border-color:#e74c3c; }
+.ans-btn.sel-ko .ans-letter { background:#e74c3c; color:#fff; }
+.ans-btn.show-ok { background:rgba(39,174,96,.08); border-color:rgba(39,174,96,.4); }
+.ans-btn.show-ok .ans-letter { background:rgba(39,174,96,.25); color:#27ae60; }
+.ans-btn:disabled { cursor:not-allowed; }
+.feedback { display:none; padding:14px 20px; border-radius:13px; margin-top:13px; font-weight:600; font-size:.95em; animation:slideUp .3s ease; align-items:center; gap:10px; }
+@keyframes slideUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.feedback.ok { background:rgba(39,174,96,.13); border:1px solid rgba(39,174,96,.38); color:#2ecc71; }
+.feedback.ko { background:rgba(231,76,60,.13); border:1px solid rgba(231,76,60,.38); color:#ff6b6b; }
+.feedback-icon { font-size:1.3em; }
+.btn-next { display:none; width:100%; margin-top:18px; background:linear-gradient(135deg,#f39c12,#e74c3c); color:#fff; border:none; padding:15px; font-size:1.02em; font-weight:800; border-radius:13px; cursor:pointer; transition:all .3s; letter-spacing:.5px; }
+.btn-next:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(243,156,18,.4); }
+
+/* ===== RÉSULTATS ===== */
+#result-screen { display:none; }
+.res-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:30px; }
+.res-card { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:24px; padding:45px; max-width:750px; width:100%; text-align:center; }
+.res-emoji { font-size:78px; margin-bottom:18px; }
+.res-title { font-size:1.9em; font-weight:900; margin-bottom:8px; }
+.res-sub { color:#888; margin-bottom:32px; font-size:.98em; }
+.score-circle { width:175px; height:175px; border-radius:50%; margin:0 auto 30px; display:flex; align-items:center; justify-content:center; }
+.score-inner { width:155px; height:155px; border-radius:50%; background:#12121f; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.score-big { font-size:2.9em; font-weight:900; }
+.score-tot { font-size:.85em; color:#888; }
+.res-details { display:grid; grid-template-columns:repeat(3,1fr); gap:13px; margin-bottom:30px; }
+.res-detail { background:rgba(255,255,255,0.04); border-radius:13px; padding:16px 10px; }
+.rd-n { font-size:1.7em; font-weight:900; }
+.rd-l { font-size:.72em; color:#888; margin-top:3px; }
+.res-msg { background:rgba(255,255,255,0.04); border-radius:13px; padding:18px; margin-bottom:26px; font-size:.95em; line-height:1.75; color:#ccc; }
+.res-btns { display:flex; gap:13px; flex-wrap:wrap; justify-content:center; }
+.btn-retry { flex:1; min-width:200px; background:linear-gradient(135deg,#f39c12,#e74c3c); color:#fff; border:none; padding:15px 28px; font-size:.98em; font-weight:800; border-radius:13px; cursor:pointer; transition:all .3s; }
+.btn-retry:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(243,156,18,.4); }
+.btn-home { flex:1; min-width:200px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.15); color:#ddd; padding:15px 28px; font-size:.98em; font-weight:600; border-radius:13px; cursor:pointer; transition:all .3s; }
+.btn-home:hover { background:rgba(255,255,255,0.09); }
+.review-sec { margin-top:28px; text-align:left; }
+.review-title { font-size:1.05em; font-weight:800; color:#f39c12; margin-bottom:13px; }
+.rev-item { background:rgba(255,255,255,0.03); border-radius:11px; padding:13px; margin-bottom:9px; border-left:4px solid #e74c3c; }
+.rev-q { font-size:.88em; color:#ccc; margin-bottom:7px; font-weight:500; }
+.rev-yours { font-size:.8em; color:#ff6b6b; margin-bottom:4px; }
+.rev-right { font-size:.8em; color:#27ae60; }
+
+/* Catégorie tag colors */
+.cat-Agents { background:rgba(155,89,182,.15); border-color:rgba(155,89,182,.4); color:#9b59b6; }
+.cat-Feux { background:rgba(230,126,34,.15); border-color:rgba(230,126,34,.4); color:#e67e22; }
+.cat-Signalisation { background:rgba(52,152,219,.15); border-color:rgba(52,152,219,.4); color:#3498db; }
+.cat-Vitesses { background:rgba(231,76,60,.15); border-color:rgba(231,76,60,.4); color:#e74c3c; }
+.cat-Priorité { background:rgba(39,174,96,.15); border-color:rgba(39,174,96,.4); color:#27ae60; }
+.cat-Distances { background:rgba(243,156,18,.15); border-color:rgba(243,156,18,.4); color:#f39c12; }
+.cat-Autoroute { background:rgba(26,188,156,.15); border-color:rgba(26,188,156,.4); color:#1abc9c; }
+.cat-Tram { background:rgba(52,73,94,.4); border-color:rgba(52,73,94,.7); color:#95a5a6; }
+.cat-Vélo { background:rgba(46,204,113,.15); border-color:rgba(46,204,113,.4); color:#2ecc71; }
+.cat-Mécanique { background:rgba(149,165,166,.15); border-color:rgba(149,165,166,.4); color:#bdc3c7; }
+.cat-Conduite { background:rgba(192,57,43,.15); border-color:rgba(192,57,43,.4); color:#e74c3c; }
+.cat-Moto { background:rgba(243,156,18,.15); border-color:rgba(243,156,18,.4); color:#f39c12; }
+.cat-Sécurité { background:rgba(231,76,60,.15); border-color:rgba(231,76,60,.4); color:#e74c3c; }
+.cat-Situations { background:rgba(52,152,219,.15); border-color:rgba(52,152,219,.4); color:#3498db; }
+.cat-Marquages { background:rgba(155,89,182,.15); border-color:rgba(155,89,182,.4); color:#9b59b6; }
+.cat-Zones { background:rgba(26,188,156,.15); border-color:rgba(26,188,156,.4); color:#1abc9c; }
+.cat-Bus { background:rgba(230,126,34,.15); border-color:rgba(230,126,34,.4); color:#e67e22; }
+.cat-Équipement { background:rgba(155,89,182,.15); border-color:rgba(155,89,182,.4); color:#9b59b6; }
+
+@media(max-width:768px){
+  .sidebar{width:175px} .main{margin-left:175px;padding:14px} .res-details{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+  .sidebar{display:none} .main{margin-left:0}
+}
+::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-thumb{background:rgba(243,156,18,.3);border-radius:5px}
+</style>
+</head>
+<body>
+
+<!-- ======= ACCUEIL ======= -->
+<div id="home-screen">
+  <div class="logo-home">🏍️</div>
+  <h1 class="home-title">Code Moto Belgique</h1>
+  <p class="home-sub">Catégorie A — Basé sur "Le Permis Belge Synthèse 2026"</p>
+  <div class="home-cards">
+    <div class="hcard"><div class="hcard-n" id="total-count">180</div><div class="hcard-l">Questions en banque</div></div>
+    <div class="hcard"><div class="hcard-n">50</div><div class="hcard-l">Questions par test</div></div>
+    <div class="hcard"><div class="hcard-n">41/50</div><div class="hcard-l">Seuil de réussite</div></div>
+  </div>
+  <button class="btn-start" onclick="startQuiz()">🚀 Commencer le test</button>
+  <div class="rules-box">
+    <h3>📋 Règles de l'examen belge</h3>
+    <p>
+      • 50 questions à choix multiple (A, B ou C)<br>
+      • Score requis : <strong>41/50 minimum (82%)</strong><br>
+      • Questions tirées aléatoirement parmi <span id="total-count2">180</span>+<br>
+      • Basé sur la synthèse officielle belge 2026<br>
+      • La bonne réponse s'affiche après chaque choix
+    </p>
+  </div>
+</div>
+
+<!-- ======= QUIZ ======= -->
+<div id="quiz-screen">
+  <div class="quiz-wrap">
+    <div class="sidebar">
+      <div class="sb-head">
+        <div class="sb-logo">🏍️</div>
+        <div class="sb-title">CODE MOTO</div>
+        <div class="sb-cat">Catégorie A — Belgique</div>
+      </div>
+      <div class="sb-prog-label">Progression</div>
+      <div class="sb-bar-wrap"><div class="sb-bar" id="sb-bar" style="width:0%"></div></div>
+      <div class="sb-prog-txt" id="sb-prog">Question 1 / 50</div>
+      <div class="sb-score">
+        <div class="sb-score-n" id="sb-score">0</div>
+        <div class="sb-score-l">bonnes réponses</div>
+      </div>
+      <div class="sb-grid-label">Vue d'ensemble</div>
+      <div class="q-grid" id="q-grid"></div>
+      <button class="btn-quit" onclick="confirmQuit()">✕ Quitter</button>
+    </div>
+    <div class="main">
+      <div class="q-header">
+        <div class="q-num-label">Question <span id="q-n">1</span> sur 50</div>
+        <div class="cat-badge" id="q-cat">—</div>
+      </div>
+      <div class="q-card">
+        <div class="q-img" id="q-img">🛣️</div>
+        <div class="q-text" id="q-text"></div>
+      </div>
+      <div class="answers" id="answers"></div>
+      <div class="feedback" id="feedback">
+        <span class="feedback-icon" id="fb-icon"></span>
+        <span id="fb-text"></span>
+      </div>
+      <button class="btn-next" id="btn-next" onclick="nextQ()">Question suivante →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======= RÉSULTATS ======= -->
+<div id="result-screen">
+  <div class="res-wrap">
+    <div class="res-card">
+      <div class="res-emoji" id="res-emoji">🎉</div>
+      <h2 class="res-title" id="res-title">Résultats</h2>
+      <p class="res-sub" id="res-sub"></p>
+      <div class="score-circle" id="res-circle">
+        <div class="score-inner">
+          <div class="score-big" id="res-big">0</div>
+          <div class="score-tot">/50</div>
+        </div>
+      </div>
+      <div class="res-details">
+        <div class="res-detail"><div class="rd-n" style="color:#27ae60" id="res-ok">0</div><div class="rd-l">✅ Correctes</div></div>
+        <div class="res-detail"><div class="rd-n" style="color:#e74c3c" id="res-ko">0</div><div class="rd-l">❌ Incorrectes</div></div>
+        <div class="res-detail"><div class="rd-n" style="color:#f39c12" id="res-pct">0%</div><div class="rd-l">📊 Score</div></div>
+      </div>
+      <div class="res-msg" id="res-msg"></div>
+      <div class="res-btns">
+        <button class="btn-retry" onclick="startQuiz()">🔄 Nouveau test aléatoire</button>
+        <button class="btn-home" onclick="goHome()">🏠 Accueil</button>
+      </div>
+      <div class="review-sec">
+        <div class="review-title">📝 Révision des erreurs</div>
+        <div id="review-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+//  BASE DE QUESTIONS — CODE MOTO BELGIQUE (Catégorie A)
+//  Source: "Le Permis Belge Synthèse 2026" + examen BOCA Catégorie A
+// ================================================================
+const QUESTIONS = [
+
+  // ====== AGENTS QUALIFIÉS ======
+  { cat:"Agents", emoji:"👮", q:"Quelle est la hiérarchie à respecter sur la route belge ?", a:["Agent qualifié > Feu > Panneaux de priorité > Priorité de droite.","Feu > Agent qualifié > Priorité de droite > Panneaux.","Panneaux > Feu > Agent qualifié > Priorité de droite."], correct:0 },
+  { cat:"Agents", emoji:"👮", q:"Un agent qualifié se tient de face ou de dos (bras en croix). Que devez-vous faire ?", a:["Vous pouvez aller dans toutes les directions.","Vous devez vous arrêter.","Vous pouvez passer si la voie est libre."], correct:1 },
+  { cat:"Agents", emoji:"👮", q:"Un agent qualifié se tient de profil (bras en croix). Que devez-vous faire ?", a:["Vous devez vous arrêter obligatoirement.","Vous pouvez aller dans toutes les directions.","Vous devez klaxonner avant de passer."], correct:1 },
+  { cat:"Agents", emoji:"👮", q:"Un agent qualifié lève le bras. Que devez-vous faire si vous n'êtes PAS encore dans le carrefour ?", a:["Vous pouvez entrer si la voie est libre.","Vous devez vous arrêter.","Vous pouvez continuer lentement."], correct:1 },
+  { cat:"Agents", emoji:"👮", q:"Un agent qualifié lève le bras APRÈS que vous vous êtes engagé dans le carrefour. Que faites-vous ?", a:["Vous devez immédiatement dégager le carrefour au plus vite.","Vous devez vous arrêter immédiatement dans le carrefour.","Vous devez reculer pour quitter le carrefour."], correct:0 },
+  { cat:"Agents", emoji:"👮", q:"Ne pas obéir aux injonctions d'un agent qualifié est considéré comme :", a:["Une simple irrégularité.", "Une faute grave.", "Une infraction mineure."], correct:1 },
+
+  // ====== VÉHICULES PRIORITAIRES ======
+  { cat:"Agents", emoji:"🚑", q:"Un véhicule avec sirène ET gyrophare (feux bleus) vous dépasse. Que faites-vous ?", a:["Vous continuez normalement, il se débrouillera.","Vous devez céder le passage et au besoin vous arrêter.","Vous accélérez pour lui laisser la voie."], correct:1 },
+  { cat:"Agents", emoji:"🚒", q:"Un véhicule avec gyrophare ALLUMÉ mais SANS sirène passe. Que faites-vous ?", a:["Vous continuez votre route normalement.","Vous devez céder le passage.","Vous devez vous arrêter."], correct:0 },
+  { cat:"Agents", emoji:"🚑", q:"Devez-vous céder le passage au véhicule prioritaire dont les feux bleus clignotants et l'avertisseur sonore spécial ne fonctionnent pas ?", a:["Oui, toujours.","Non.","Oui, mais seulement la nuit."], correct:1 },
+
+  // ====== FEUX DE SIGNALISATION ======
+  { cat:"Feux", emoji:"🔴", q:"Que signifie un feu orange FIXE ?", a:["Arrêt obligatoire, sauf s'il n'est pas possible de s'arrêter en toute sécurité.","Vous pouvez passer si la voie est libre.","Le feu est en panne, respectez les règles de priorité."], correct:0 },
+  { cat:"Feux", emoji:"🟡", q:"Que signifie un feu orange CLIGNOTANT au milieu (feu normal) ?", a:["Arrêt obligatoire.","Le feu est en panne. Franchissez en respectant les règles de priorité.","Vous pouvez passer sans ralentir."], correct:1 },
+  { cat:"Feux", emoji:"🟠", q:"Que signifie un feu orange clignotant EN BAS du feu ?", a:["Le feu est en panne.","Le feu fonctionne normalement, similaire à un feu vert. Respectez les règles de priorité.","Arrêt obligatoire."], correct:1 },
+  { cat:"Feux", emoji:"🟢", q:"Vous êtes à un feu rouge avec une flèche verte vers la droite. Pouvez-vous passer ?", a:["Oui, sans condition.","Oui, en suivant la direction de la flèche et en cédant le passage aux autres usagers.","Non, le feu rouge interdit tout passage."], correct:1 },
+  { cat:"Feux", emoji:"🟢", q:"Une flèche verte d'évacuation est ALLUMÉE. Que signifie-t-elle ?", a:["Les véhicules venant en sens inverse sont bloqués par un feu rouge. Vous pouvez tourner sans problème.","Vous devez céder le passage aux conducteurs d'en face.","Vous devez vous arrêter."], correct:0 },
+  { cat:"Feux", emoji:"🟢", q:"Une flèche verte d'évacuation est ÉTEINTE. Que signifie-t-elle ?", a:["Vous pouvez tourner librement sans condition.","Vous pouvez tourner à condition de céder le passage aux conducteurs d'en face (ils ont aussi un feu vert).","Vous ne pouvez pas tourner."], correct:1 },
+  { cat:"Feux", emoji:"🚦", q:"Si vous changez de direction (à gauche ou à droite) à un carrefour, vous devez :", a:["Passer en priorité car vous avez un feu vert.","Céder le passage aux conducteurs et piétons circulant sur les autres parties de la même voie publique.","Klaxonner pour signaler votre intention."], correct:1 },
+
+  // ====== MARQUAGES ROUTIERS ======
+  { cat:"Marquages", emoji:"🛣️", q:"Une ligne CONTINUE au centre de la route signifie :", a:["Autorisation de la franchir pour dépasser.","Interdit de la franchir, sauf pour éviter un obstacle fixe.","Vous pouvez la franchir si la voie est libre."], correct:1 },
+  { cat:"Marquages", emoji:"🛣️", q:"Une ligne DISCONTINUE au centre de la route signifie :", a:["Interdit de la franchir.","Autorisation de la franchir pour dépasser.","Vous devez rouler dessus."], correct:1 },
+  { cat:"Marquages", emoji:"🛣️", q:"Sur des lignes JUXTAPOSÉES (continue + discontinue), quelle règle s'applique ?", a:["Vous pouvez toujours dépasser.","Vous tenez compte de la 1ère ligne que vous allez franchir (celle de votre côté).","Vous ne pouvez jamais dépasser."], correct:1 },
+  { cat:"Marquages", emoji:"🟡", q:"Une ligne JAUNE/ORANGE remplace temporairement la ligne blanche. Elle est présente car :", a:["Il y a des travaux. La ligne jaune est PRIORITAIRE sur la ligne blanche.","Elle est décorative.","Elle indique une zone de stationnement payant."], correct:0 },
+  { cat:"Marquages", emoji:"🛣️", q:"Vous vous apprêtez à dépasser. La première ligne que vous allez franchir est une ligne blanche CONTINUE. Pouvez-vous dépasser ?", a:["Oui, si la voie est libre.","Non, c'est interdit (faute grave à l'examen).","Oui, si vous doublez rapidement."], correct:1 },
+  { cat:"Marquages", emoji:"🟡", q:"Il y a une ligne jaune continue et une ligne blanche discontinue. Vous voulez dépasser. Pouvez-vous ?", a:["Oui, car la ligne blanche est discontinue.","Non, car la ligne jaune est prioritaire et elle est continue (faute grave).","Oui, mais vous devez vous rabattre vite."], correct:1 },
+
+  // ====== VITESSES ======
+  { cat:"Vitesses", emoji:"🏘️", q:"Quelle est la vitesse maximale en agglomération à Bruxelles ?", a:["50 km/h.","30 km/h.","70 km/h."], correct:1 },
+  { cat:"Vitesses", emoji:"🏘️", q:"Quelle est la vitesse maximale en agglomération en Flandre ?", a:["30 km/h.","70 km/h.","50 km/h."], correct:2 },
+  { cat:"Vitesses", emoji:"🏘️", q:"Quelle est la vitesse maximale en agglomération en Wallonie ?", a:["50 km/h.","30 km/h.","70 km/h."], correct:0 },
+  { cat:"Vitesses", emoji:"🛣️", q:"Quelle est la vitesse maximale hors agglomération en Flandre (route ordinaire) ?", a:["90 km/h.","70 km/h.","120 km/h."], correct:1 },
+  { cat:"Vitesses", emoji:"🛣️", q:"Quelle est la vitesse maximale hors agglomération en Wallonie (route ordinaire) ?", a:["70 km/h.","90 km/h.","120 km/h."], correct:1 },
+  { cat:"Vitesses", emoji:"🛣️", q:"Quelle est la vitesse maximale hors agglomération à Bruxelles ?", a:["70 km/h.","90 km/h.","120 km/h."], correct:0 },
+  { cat:"Vitesses", emoji:"🏎️", q:"Quelle est la vitesse maximale sur autoroute en Belgique ?", a:["100 km/h.","130 km/h.","120 km/h."], correct:2 },
+  { cat:"Vitesses", emoji:"🏎️", q:"Quelle est la vitesse MINIMALE réglementée sur autoroute belge ?", a:["50 km/h.","70 km/h.","80 km/h."], correct:1 },
+  { cat:"Vitesses", emoji:"⚠️", q:"Vous voyez un panneau 'Villers-en-Fagne' (nom de localité en jaune). Votre vitesse :", a:["Passe à 50 km/h.","Passe à 30 km/h.","Ne change pas."], correct:2 },
+  { cat:"Vitesses", emoji:"🚦", q:"Vous roulez en agglomération en Région flamande. Vous voyez un signal de fin d'agglomération. Vous êtes désormais :", a:["Limité à 50 km/h.","Sur une route ordinaire, limité à 70 km/h en Flandre.","Sur autoroute."], correct:1 },
+
+  // ====== ZONES LENTES ======
+  { cat:"Zones", emoji:"🚶", q:"Quelle est la vitesse maximale en zone piétonne ?", a:["10 km/h.","5 km/h (allure du pas).","20 km/h."], correct:1 },
+  { cat:"Zones", emoji:"🏠", q:"Quelle est la vitesse maximale en zone résidentielle/zone de rencontre ?", a:["30 km/h.","20 km/h.","10 km/h."], correct:1 },
+  { cat:"Zones", emoji:"🔺", q:"Sur un dispositif surélevé (dos d'âne), quelle est la vitesse maximale ?", a:["20 km/h.","50 km/h.","30 km/h."], correct:2 },
+  { cat:"Zones", emoji:"🚲", q:"Dans une zone cyclable, quelle est la vitesse maximale ?", a:["50 km/h.","30 km/h.","20 km/h."], correct:1 },
+  { cat:"Zones", emoji:"🔺", q:"Sur un dispositif surélevé, est-il autorisé de s'arrêter ou stationner ?", a:["Oui, toujours.","Non, il est interdit de s'arrêter, stationner ou dépasser. S'immobiliser est autorisé.","Oui, si c'est brièvement."], correct:1 },
+  { cat:"Zones", emoji:"🏠", q:"En zone résidentielle, les piétons sont-ils prioritaires ?", a:["Non, les véhicules ont la priorité.","Oui, les piétons sont prioritaires (mais pas les cyclistes).","Oui, les piétons ET les cyclistes sont prioritaires."], correct:1 },
+  { cat:"Zones", emoji:"🛣️", q:"En zone cyclable, est-il interdit de dépasser un cycliste ?", a:["Non, vous pouvez le dépasser si c'est sûr.","Oui, il est interdit de dépasser un cycliste ou un speed pédélec.","Oui, sauf à vitesse réduite."], correct:1 },
+
+  // ====== AUTOROUTE ======
+  { cat:"Autoroute", emoji:"🛣️", q:"Quels usagers ne peuvent PAS circuler sur l'autoroute ?", a:["Motos et camions.","Piétons, cyclistes, conducteurs de cyclomoteurs (classe A, B), véhicules lents (<70km/h).","Uniquement les piétons."], correct:1 },
+  { cat:"Autoroute", emoji:"🔄", q:"Le demi-tour est-il autorisé sur autoroute ?", a:["Oui, en cas d'urgence.","Non, c'est une infraction grave.","Oui, mais seulement aux échangeurs."], correct:1 },
+  { cat:"Autoroute", emoji:"🔄", q:"La marche arrière est-elle autorisée sur autoroute ?", a:["Oui, si c'est court.","Non, c'est une infraction grave.","Oui, pour rejoindre une sortie manquée."], correct:1 },
+  { cat:"Autoroute", emoji:"🚗", q:"Sur quelle voie devez-vous normalement circuler sur autoroute ?", a:["La voie de gauche.","La voie la plus à droite libre.","N'importe quelle voie."], correct:1 },
+  { cat:"Autoroute", emoji:"🅿️", q:"En panne sur autoroute, que faites-vous ?", a:["Vous vous arrêtez sur la bande d'arrêt d'urgence, allumez les feux de détresse et posez le triangle.","Vous continuez jusqu'à la prochaine sortie.","Vous téléphonez depuis votre véhicule sur la voie de droite."], correct:0 },
+  { cat:"Autoroute", emoji:"↩️", q:"Sur autoroute, quand devez-vous vous insérer ?", a:["Le plus tôt possible sur l'autoroute.","Le plus tard possible.","N'importe quand sur la bretelle d'accès."], correct:0 },
+  { cat:"Autoroute", emoji:"🚦", q:"Pour s'insérer ou sortir de l'autoroute, vous devez dans l'ordre :", a:["Klaxonner, accélérer, changer de bande.","Contrôler le rétroviseur, activer le clignotant, vérifier l'angle mort, changer de bande en cédant le passage.","Freiner, vérifier le miroir, tourner."], correct:1 },
+
+  // ====== DISTANCES ======
+  { cat:"Distances", emoji:"📏", q:"Comment calcule-t-on approximativement la distance de RÉACTION ?", a:["Vitesse/10 × Vitesse/10.","Vitesse/10 × 3.","Vitesse/2."], correct:1 },
+  { cat:"Distances", emoji:"📏", q:"Comment calcule-t-on approximativement la distance D'ARRÊT ?", a:["Vitesse/10 × 3.","Vitesse/10 × Vitesse/10.","Vitesse/2."], correct:1 },
+  { cat:"Distances", emoji:"📏", q:"Comment calcule-t-on la distance de SÉCURITÉ ?", a:["Vitesse/10 × 3.","Vitesse × 3.","Vitesse divisé par 2."], correct:2 },
+  { cat:"Distances", emoji:"📏", q:"À 90 km/h, quelle est approximativement la distance d'arrêt ?", a:["27 mètres.","81 mètres.","45 mètres."], correct:1 },
+  { cat:"Distances", emoji:"📏", q:"À 120 km/h, quelle est la distance de sécurité recommandée ?", a:["36 mètres.","60 mètres.","144 mètres."], correct:1 },
+  { cat:"Distances", emoji:"📏", q:"La distance de RÉACTION dépend principalement de :", a:["L'état des pneus.","La vitesse et le temps de réaction (alcool, fatigue, téléphone allongent ce temps).","Le poids du véhicule."], correct:1 },
+  { cat:"Distances", emoji:"📏", q:"À un feu rouge, quelle distance de sécurité gardez-vous avec le véhicule devant ?", a:["5 mètres minimum.","Vous devez voir les roues arrière du véhicule devant vous.","2 mètres suffisent à l'arrêt."], correct:1 },
+
+  // ====== TRAIN / PASSAGE À NIVEAU ======
+  { cat:"Signalisation", emoji:"🚂", q:"Sur un passage à niveau AVEC barrières ou feux, pouvez-vous dépasser tous les conducteurs ?", a:["Oui, uniquement les cyclistes.","Oui, vous pouvez dépasser tous les conducteurs (cyclistes, voitures, motos...).","Non, les dépassements sont interdits dans cette zone."], correct:1 },
+  { cat:"Signalisation", emoji:"🚂", q:"Sur un passage à niveau SANS barrières ni feux, pouvez-vous dépasser une moto ?", a:["Oui, si la voie est libre.","Non, sur un passage à niveau sans barrières, seuls les cyclistes peuvent être dépassés. C'est une infraction grave.","Oui, à vitesse réduite."], correct:1 },
+  { cat:"Signalisation", emoji:"🚂", q:"Les feux rouges clignotants d'un passage à niveau sont allumés. Que faites-vous ?", a:["Vous passez rapidement avant le train.","Il est interdit de traverser le passage à niveau.","Vous passez prudemment."], correct:1 },
+  { cat:"Signalisation", emoji:"🚂", q:"Le feu BLANC/JAUNE clignotant d'un passage à niveau est allumé. Cela signifie :", a:["Interdiction de traverser.","Autorisation de traverser le passage à niveau.","Danger, ralentir mais on peut passer."], correct:1 },
+  { cat:"Signalisation", emoji:"🚂", q:"Sur un passage à niveau, il est interdit de s'engager si :", a:["Seulement si les barrières sont fermées.","Les feux rouges clignotent, les barrières sont en mouvement ou fermées, ou le signal sonore fonctionne.","Uniquement si un train est visible."], correct:1 },
+
+  // ====== TRAM ======
+  { cat:"Tram", emoji:"🚃", q:"Le tram a-t-il toujours la priorité sur les autres usagers ?", a:["Non, il respecte les panneaux de priorité.","Oui, le tram a toujours la priorité. Il ne respecte pas les panneaux de priorité ni la priorité de droite.","Oui, sauf aux feux de signalisation."], correct:1 },
+  { cat:"Tram", emoji:"🚃", q:"Que doit respecter le tram comme règles de circulation ?", a:["Tous les panneaux, comme tous les véhicules.","Uniquement les injonctions de l'agent de police et ses propres signaux lumineux.","La priorité de droite uniquement."], correct:1 },
+  { cat:"Tram", emoji:"🚃", q:"Comment dépasse-t-on ou croise-t-on un véhicule sur rail (tram) ?", a:["Par la gauche toujours.","Par la droite, sauf si le passage est trop étroit, un véhicule est à l'arrêt, ou il y a un obstacle fixe.","Par la gauche ou la droite au choix."], correct:1 },
+
+  // ====== BANDE DE BUS / SITE SPÉCIAL ======
+  { cat:"Bus", emoji:"🚌", q:"Sur une bande de bus, est-il autorisé de circuler en moto ?", a:["Oui, les motos peuvent utiliser la bande de bus.","Non, circuler, s'arrêter et stationner sont interdits sur la bande de bus (sauf à proximité d'un carrefour pour tourner à droite).","Oui, en dehors des heures de pointe."], correct:1 },
+  { cat:"Bus", emoji:"🚌", q:"Comment reconnaît-on une bande de bus ?", a:["Par une ligne continue la séparant de la chaussée.","Par une ligne discontinue la séparant de la chaussée.","Par une ligne jaune."], correct:1 },
+  { cat:"Bus", emoji:"🚌", q:"Un bus (transport en commun) veut quitter son arrêt en agglomération. Devez-vous lui céder le passage ?", a:["Non, vous avez la priorité.","Oui, vous devez lui céder le passage en agglomération.","Cela dépend de la signalisation."], correct:1 },
+  { cat:"Bus", emoji:"🚌", q:"Un bus SCOLAIRE veut quitter son arrêt. Avez-vous la priorité sur lui ?", a:["Non, le bus scolaire est prioritaire.","Oui, vous êtes prioritaire car il effectue une manœuvre (en agglomération et hors agglomération).","Cela dépend : en agglomération non, hors agglomération oui."], correct:1 },
+  { cat:"Bus", emoji:"🚌", q:"Pouvez-vous stationner dans les 15 mètres d'un arrêt de bus ?", a:["Oui, si c'est bref.","Non, c'est interdit. Mais circuler et s'arrêter sont autorisés.","Oui, si aucun bus n'est présent."], correct:1 },
+
+  // ====== PISTE CYCLABLE / CYCLISTES ======
+  { cat:"Vélo", emoji:"🚲", q:"La piste cyclable fait-elle partie de la chaussée ?", a:["Oui.","Non, la piste cyclable ne fait pas partie de la chaussée.","Cela dépend du marquage."], correct:1 },
+  { cat:"Vélo", emoji:"🚲", q:"Un cycliste traverse la chaussée sur un passage pour cyclistes. Avez-vous la priorité ?", a:["Non, le cycliste est prioritaire.","Oui, vous avez la priorité car le cycliste effectue une manœuvre.","Cela dépend de la signalisation."], correct:1 },
+  { cat:"Vélo", emoji:"🚲", q:"Un cycliste descend de son vélo et traverse sur le passage piéton. Est-il prioritaire ?", a:["Non, il reste moins prioritaire qu'un véhicule.","Oui, il devient piéton et est donc prioritaire sur le passage piéton.","Seulement si le passage piéton est signalé."], correct:1 },
+  { cat:"Vélo", emoji:"🚲", q:"Quelle distance latérale minimale devez-vous laisser pour dépasser un cycliste en agglomération ?", a:["0,5 mètre.","1 mètre.","1,5 mètre."], correct:1 },
+  { cat:"Vélo", emoji:"🚲", q:"Quelle distance latérale minimale devez-vous laisser pour dépasser un cycliste HORS agglomération ?", a:["1 mètre.","2 mètres.","1,5 mètre."], correct:2 },
+  { cat:"Vélo", emoji:"🚲", q:"Vous tournez à droite à un carrefour. Vous voyez le panneau 'tourner à droite avec cyclistes'. Que signifie-t-il ?", a:["Vous avez la priorité sur les cyclistes.","Des cyclistes qui vont tout droit sur la piste cyclable sont prioritaires sur vous.","Vous devez klaxonner avant de tourner."], correct:1 },
+  { cat:"Vélo", emoji:"🚲", q:"À une zone avancée (sas vélo) devant un feu rouge, où vous arrêtez-vous en moto ?", a:["Dans la zone avancée avec les cyclistes.","À la première ligne, avant la zone avancée.","N'importe où avant le feu."], correct:1 },
+
+  // ====== PRIORITÉ DE DROITE ======
+  { cat:"Priorité", emoji:"🔀", q:"La priorité de droite s'applique-t-elle quand il y a un agent qualifié, des feux ou des panneaux de priorité ?", a:["Oui, toujours.","Non, elle s'applique uniquement quand il n'y a pas d'agent, pas de feux, et pas de panneaux.","Oui, sauf si l'agent est présent."], correct:1 },
+  { cat:"Priorité", emoji:"🚃", q:"Citez une exception à la priorité de droite :", a:["Un camion venant de droite.","Le tram, déboucher d'un sentier/chemin de terre, sortir d'une propriété/parking, traverser une piste cyclable ininterrompue.","Un cycliste venant de droite."], correct:1 },
+  { cat:"Priorité", emoji:"🔀", q:"Vous débouchez d'un chemin de terre (même si la fin est goudronnée). Avez-vous la priorité de droite sur la route ?", a:["Oui, si la route est goudronnée.","Non, vous devez céder le passage à tous les véhicules sur la route.","Oui, sur les cyclistes uniquement."], correct:1 },
+  { cat:"Priorité", emoji:"🔄", q:"Dans un rond-point avec panneau 'cédez le passage' à l'entrée. Qui a la priorité ?", a:["Les véhicules qui entrent dans le rond-point.","Les véhicules déjà dans le rond-point.","La priorité de droite s'applique."], correct:1 },
+  { cat:"Priorité", emoji:"↩️", q:"En sortant d'un rond-point, est-il obligatoire de mettre le clignotant ?", a:["Non, c'est optionnel.","Oui, mettre le clignotant est obligatoire en sortant du rond-point.","Oui, mais seulement si d'autres véhicules sont présents."], correct:1 },
+  { cat:"Priorité", emoji:"↩️", q:"En entrant dans un rond-point, est-il obligatoire de mettre le clignotant ?", a:["Oui, toujours.","Non, c'est optionnel, sauf si vous sortez à la 1ère sortie (alors vous devez le mettre en entrant).","Oui, uniquement à droite."], correct:1 },
+  { cat:"Priorité", emoji:"↔️", q:"Principe de la tirette : quand s'applique-t-il ?", a:["Toujours sur les voies à double sens.","Uniquement quand il y a une réduction de bandes ET une forte densité de circulation (embouteillage).","Quand vous êtes pressé."], correct:1 },
+  { cat:"Priorité", emoji:"🏠", q:"Vous sortez d'un parking. Avez-vous la priorité de droite ?", a:["Oui, toujours.","Non, sortir d'un parking est une exception à la priorité de droite. Vous cédez le passage à tous.","Oui, si c'est un grand parking."], correct:1 },
+
+  // ====== DÉPASSEMENT / CROISEMENT ======
+  { cat:"Signalisation", emoji:"↔️", q:"De quel côté effectue-t-on un dépassement en Belgique ?", a:["Par la droite.","Par la gauche.","Par le côté qui est libre."], correct:1 },
+  { cat:"Signalisation", emoji:"↔️", q:"De quel côté effectue-t-on un croisement en Belgique ?", a:["Par la gauche.","Par la droite.","On peut choisir."], correct:1 },
+  { cat:"Signalisation", emoji:"↩️", q:"Vous voulez tourner à droite. Comment tournez-vous ?", a:["Large.","Serré.","En ligne droite puis vous virer."], correct:1 },
+  { cat:"Signalisation", emoji:"↩️", q:"Vous voulez tourner à gauche. Comment tournez-vous ?", a:["Serré.","Large.","En faisant un demi-tour."], correct:1 },
+  { cat:"Signalisation", emoji:"🛣️", q:"Vous êtes derrière un véhicule qui vous dépasse. Que devez-vous faire ?", a:["Accélérer pour le gêner.","Maintenir votre allure et serrer à droite pour faciliter le dépassement.","Freiner brusquement."], correct:1 },
+
+  // ====== CIRCULATION DES MOTOS ======
+  { cat:"Moto", emoji:"🏍️", q:"En cas d'embouteillage sur autoroute, les motos peuvent remonter les files. Entre quelles bandes ?", a:["Les 2 bandes les plus à droite.","Les 2 bandes les plus à gauche de la chaussée.","N'importe quelles bandes."], correct:1 },
+  { cat:"Moto", emoji:"🏍️", q:"En cas d'embouteillage sur autoroute, les motos remontent les files. Vitesse maximale autorisée ?", a:["Maximum 30 km/h de plus que les autres véhicules, max 60 km/h.","Maximum 20 km/h de plus que les autres véhicules, maximum 50 km/h.","Maximum 10 km/h de plus, max 40 km/h."], correct:1 },
+  { cat:"Moto", emoji:"🏍️", q:"Si les voitures sont immobilisées (0 km/h) en embouteillage, à quelle vitesse max les motos peuvent-elles remonter les files ?", a:["30 km/h.","50 km/h.","20 km/h."], correct:2 },
+  { cat:"Moto", emoji:"🏍️", q:"Si les voitures roulent à 40 km/h en embouteillage, à quelle vitesse max les motos peuvent-elles remonter les files ?", a:["60 km/h.","50 km/h.","40 km/h."], correct:1 },
+  { cat:"Moto", emoji:"🏍️", q:"Le couloir de secours doit-il être créé même s'il n'y a pas de véhicule prioritaire qui s'approche ?", a:["Non, seulement quand le véhicule est visible.","Oui, vous devez créer le couloir de secours dès qu'il y a un embouteillage.","Uniquement sur autoroute."], correct:1 },
+  { cat:"Moto", emoji:"🏍️", q:"Deux motos peuvent-elles rouler de front sur une voie de circulation ?", a:["Non, c'est toujours interdit.","Oui, c'est autorisé en Belgique.","Oui, mais uniquement sur autoroute."], correct:1 },
+  { cat:"Moto", emoji:"⛑️", q:"Le port du casque homologué est-il obligatoire pour le conducteur d'une moto ?", a:["Oui, toujours.","Seulement sur autoroute.","Seulement la nuit."], correct:0 },
+  { cat:"Moto", emoji:"⛑️", q:"Vous poussez votre moto sans la conduire. Devez-vous garder votre casque sur la tête ?", a:["Non, vous n'êtes pas en train de conduire.","Oui, car une personne qui pousse une moto est considérée comme un conducteur.","Seulement si vous êtes sur la chaussée."], correct:1 },
+
+  // ====== CONDUITE / SITUATIONS ======
+  { cat:"Conduite", emoji:"🐴", q:"Vous vous approchez de chevaux craintifs sur la route. Que devez-vous faire ?", a:["Continuer le plus rapidement possible pour ne pas les effrayer longtemps.","Ralentir.","M'arrêter complètement."], correct:2 },
+  { cat:"Conduite", emoji:"↩️", q:"Vous ne voyez pas encore la fin du virage. Êtes-vous bien placé sur la chaussée ?", a:["Oui.","Non."], correct:1 },
+  { cat:"Conduite", emoji:"↪️", q:"Vous pouvez clairement voir la fin du virage. Êtes-vous bien placé sur la route ?", a:["Oui.","Non."], correct:0 },
+  { cat:"Conduite", emoji:"🌧️", q:"En prenant un virage sous la pluie, vous ne pouvez pas éviter une plaque d'égout. Que faites-vous de préférence ?", a:["Je remets d'abord ma moto droite pour rouler dessus, puis je reprends le virage.","Je freine avec mon frein avant.","Je freine avec mon frein arrière."], correct:0 },
+  { cat:"Conduite", emoji:"👁️", q:"Comment savez-vous que vous n'êtes pas dans l'angle mort d'un autre véhicule ?", a:["Parce que je roule à minimum 3 mètres du véhicule.","Parce que je peux voir les yeux du conducteur dans son rétroviseur.","Il n'y a aucune possibilité de le savoir."], correct:1 },
+  { cat:"Conduite", emoji:"💡", q:"Quand devez-vous utiliser votre feu de croisement (code) ?", a:["Toujours, en toutes circonstances.","Uniquement la nuit.","Uniquement par brouillard ou pluie."], correct:0 },
+  { cat:"Conduite", emoji:"🏎️", q:"Vous roulez en agglomération. Pouvez-vous rouler plus vite que le véhicule sur la bande de gauche ?", a:["Oui.","Non."], correct:0 },
+  { cat:"Conduite", emoji:"🚦", q:"La flèche verte vous autorise à tourner à droite. Avez-vous la priorité sur les conducteurs venant de gauche ?", a:["Oui.","Non, vous devez céder le passage aux conducteurs venant de gauche."], correct:1 },
+  { cat:"Conduite", emoji:"🔧", q:"Quel est le meilleur moment pour contrôler la pression des pneus ?", a:["Lorsque les pneus sont chauds.","Lorsque les pneus sont froids.","Les deux sont équivalents."], correct:1 },
+  { cat:"Conduite", emoji:"🔧", q:"Devez-vous ajuster la pression des pneus par temps froid ?", a:["Oui, je dois la diminuer.","Oui, je dois l'augmenter.","Non, je dois la laisser telle quelle."], correct:2 },
+
+  // ====== PANNEAUX DE DANGER ======
+  { cat:"Signalisation", emoji:"⚠️", q:"À quelle distance avant le danger prennent effet les panneaux de danger ?", a:["50 mètres.","100 mètres.","150 mètres (sauf panneau additionnel indiquant une autre distance)."], correct:2 },
+  { cat:"Signalisation", emoji:"⚠️", q:"Un panneau de danger avec un panneau additionnel '200m'. Où se trouve le danger ?", a:["Dans 150 mètres.","Dans 200 mètres.","Le panneau est là depuis 200 mètres."], correct:1 },
+  { cat:"Signalisation", emoji:"⚠️", q:"Un triangle rouge avec un cerf représente :", a:["Une zone de chasse.","Traversée de gros gibier.","Un parc naturel."], correct:1 },
+  { cat:"Signalisation", emoji:"⚠️", q:"Un triangle rouge avec un dessin montrant une route glissante signifie :", a:["Travaux sur la route.","Chaussée glissante.","Route en pente."], correct:1 },
+  { cat:"Signalisation", emoji:"⚠️", q:"Un triangle avec des enfants signifie :", a:["Limite de vitesse à 30 km/h.","Endroit fréquenté par des enfants. Pas de limite de vitesse imposée par ce panneau mais vous devez adapter votre allure.","Zone scolaire avec limite à 20 km/h."], correct:1 },
+  { cat:"Signalisation", emoji:"⚠️", q:"Un triangle avec des bosses sur la route (cassis) signifie :", a:["Préparez-vous à circuler à 30 km/h.","Chaussée dégradée, adaptez votre allure.","Route fermée à 500 mètres."], correct:1 },
+
+  // ====== PANNEAUX D'INTERDICTION ======
+  { cat:"Signalisation", emoji:"🚫", q:"Un rond rouge barré (sens interdit). À qui s'applique-t-il ?", a:["Uniquement aux voitures.","À tout conducteur sans exception.","Seulement aux poids lourds."], correct:1 },
+  { cat:"Signalisation", emoji:"🚫", q:"Un rond rouge avec 'EXCEPTÉ CIRCULATION LOCALE'. À qui interdit-il l'accès ?", a:["À tous les conducteurs sans exception.","À tous sauf les riverains et les personnes se rendant chez l'un d'eux.","À tous sauf les livraisons."], correct:1 },
+  { cat:"Signalisation", emoji:"🚫", q:"Que signifie le panneau d'interdiction de demi-tour ?", a:["Interdiction de tourner à gauche jusqu'au prochain carrefour.","À partir du signal jusqu'au prochain carrefour inclus, interdiction de faire demi-tour.","Interdiction de faire marche arrière."], correct:1 },
+
+  // ====== FLÈCHES AU-DESSUS DES BANDES ======
+  { cat:"Signalisation", emoji:"🔵", q:"Une flèche VERTE au-dessus de votre bande de circulation signifie :", a:["Vous devez quitter cette bande.","Autorisation de circuler sur cette bande.","Bande réservée aux bus."], correct:1 },
+  { cat:"Signalisation", emoji:"🟠", q:"Une flèche ORANGE au-dessus de votre bande signifie :", a:["Autorisation de circuler.","Vous devez quitter cette bande.","Vitesse réduite obligatoire."], correct:1 },
+  { cat:"Signalisation", emoji:"❌", q:"Une croix ROUGE au-dessus d'une bande signifie :", a:["Vous pouvez circuler à vitesse réduite.","Il est interdit de circuler sur cette bande.","Bande de travaux, ralentir."], correct:1 },
+
+  // ====== PANNEAUX D'INDICATION ======
+  { cat:"Signalisation", emoji:"🔵", q:"Un panneau bleu avec une flèche vers le haut ET des vélos indique :", a:["Voie sans issue sauf pour les vélos.","Voie à sens unique.","Piste cyclable obligatoire."], correct:0 },
+  { cat:"Signalisation", emoji:"🔵", q:"Quelle est la différence entre 'sens unique' et 'obligation d'aller tout droit' ?", a:["Ils signifient la même chose.","Sens unique : tous vont dans le même sens, on peut tourner. Obligation tout droit : on ne peut pas tourner mais des véhicules peuvent venir en sens inverse.","Obligation tout droit : uniquement pour les camions."], correct:1 },
+
+  // ====== SÉCURITÉ ======
+  { cat:"Sécurité", emoji:"🍺", q:"Quel est le taux maximum d'alcoolémie autorisé pour conduire en Belgique ?", a:["0,8 g/l de sang.","0,5 g/l de sang (0,25 mg/l d'air alvéolaire).","0,2 g/l de sang."], correct:1 },
+  { cat:"Sécurité", emoji:"📱", q:"Est-il autorisé de téléphoner en conduisant sans kit mains-libres en Belgique ?", a:["Oui, si on ralentit.","Non, c'est strictement interdit.","Oui, brièvement à l'arrêt."], correct:1 },
+  { cat:"Sécurité", emoji:"😴", q:"Vous vous sentez somnolent en conduisant. Que devez-vous faire ?", a:["Baisser la fenêtre et continuer.","Vous arrêter dans un endroit sûr et vous reposer.","Accélérer pour arriver plus vite."], correct:1 },
+  { cat:"Sécurité", emoji:"☎️", q:"Quel est le numéro d'urgence européen ?", a:["100.","112.","101."], correct:1 },
+  { cat:"Sécurité", emoji:"🌉", q:"Sur un pont, quelle précaution particulière prenez-vous par temps de gel ?", a:["Aucune, le pont est toujours traité.","Le pont gèle avant la route, je ralentis et redouble de prudence.","J'accélère pour traverser rapidement."], correct:1 },
+  { cat:"Sécurité", emoji:"🍂", q:"Sur une route couverte de feuilles mouillées, quel est le risque principal ?", a:["Aucun risque particulier.","Risque important de glissade.","Risque d'endommager les pneus."], correct:1 },
+
+  // ====== STATIONNEMENT ======
+  { cat:"Signalisation", emoji:"🅿️", q:"Est-il autorisé de stationner à moins de 15 mètres d'un arrêt de bus ?", a:["Oui, si c'est bref.","Non, c'est interdit.","Oui, si aucun bus n'est présent."], correct:1 },
+  { cat:"Signalisation", emoji:"🅿️", q:"En zone résidentielle, où peut-on stationner ?", a:["Uniquement à gauche.","À gauche et à droite si présence de marquages ou panneaux le permettant.","Nulle part."], correct:1 },
+
+  // ====== QUESTIONS SPÉCIFIQUES BOCA ======
+  { cat:"Moto", emoji:"🏍️", q:"Que signifient ces signaux ? (croix de Saint-André + triangle avec locomotive)", a:["Un passage à niveau avec barrières.","Un croisement de la voie publique par une ou plusieurs voies ferrées établies dans la chaussée.","Un passage à niveau sans barrières."], correct:1 },
+  { cat:"Moto", emoji:"🏍️", q:"Vous roulez en agglomération en Région flamande et voyez un panneau '50' d'agglomération. Quelle est la vitesse autorisée ?", a:["30 km/h.","50 km/h.","70 km/h."], correct:1 },
+  { cat:"Moto", emoji:"🏍️", q:"Vous roulez en agglomération en Région flamande et voyez un signal 'E' (zone 30). Quelle est la vitesse autorisée ?", a:["50 km/h.","30 km/h.","70 km/h."], correct:1 },
+];
+
+// ================================================================
+//  VARIABLES & LOGIQUE
+// ================================================================
+let currentQs = [], currentIdx = 0, score = 0, userAnswers = [], answered = false;
+
+document.getElementById('total-count').textContent = QUESTIONS.length;
+document.getElementById('total-count2').textContent = QUESTIONS.length;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  currentQs = shuffle(QUESTIONS).slice(0, 50);
+  currentIdx = 0; score = 0; answered = false;
+  userAnswers = new Array(50).fill(null);
+  document.getElementById('home-screen').style.display = 'none';
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  buildGrid();
+  showQ();
+}
+
+function buildGrid() {
+  const g = document.getElementById('q-grid');
+  g.innerHTML = '';
+  for (let i = 0; i < 50; i++) {
+    const c = document.createElement('div');
+    c.className = 'gc'; c.id = 'gc' + i; c.textContent = i + 1;
+    g.appendChild(c);
+  }
+}
+
+function showQ() {
+  answered = false;
+  const q = currentQs[currentIdx];
+  document.getElementById('q-n').textContent = currentIdx + 1;
+
+  // Badge catégorie avec couleur
+  const catEl = document.getElementById('q-cat');
+  catEl.textContent = q.cat;
+  catEl.className = 'cat-badge cat-' + q.cat;
+
+  document.getElementById('q-img').textContent = q.emoji || '🛣️';
+  document.getElementById('q-text').textContent = q.q;
+
+  // Réponses
+  const cont = document.getElementById('answers');
+  cont.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  q.a.forEach((ans, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'ans-btn';
+    btn.onclick = () => pick(i);
+    btn.innerHTML = `<span class="ans-letter">${letters[i]}</span><span>${ans}</span>`;
+    cont.appendChild(btn);
+  });
+
+  // Reset
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'none'; fb.className = 'feedback';
+  document.getElementById('btn-next').style.display = 'none';
+
+  // Progress
+  const pct = Math.round((currentIdx / 50) * 100);
+  document.getElementById('sb-bar').style.width = pct + '%';
+  document.getElementById('sb-prog').textContent = `Question ${currentIdx + 1} / 50`;
+  document.getElementById('sb-score').textContent = score;
+
+  // Grid
+  for (let i = 0; i < 50; i++) {
+    const c = document.getElementById('gc' + i);
+    if (!c) continue;
+    c.classList.remove('cur', 'ok', 'ko');
+    if (i === currentIdx) c.classList.add('cur');
+    else if (userAnswers[i]) {
+      c.classList.add(userAnswers[i].isCorrect ? 'ok' : 'ko');
+    }
+  }
+}
+
+function pick(idx) {
+  if (answered) return;
+  answered = true;
+  const q = currentQs[currentIdx];
+  const btns = document.querySelectorAll('.ans-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const isOk = idx === q.correct;
+  userAnswers[currentIdx] = { chosen: idx, correct: q.correct, isCorrect: isOk, q };
+  if (isOk) score++;
+
+  if (isOk) btns[idx].classList.add('sel-ok');
+  else { btns[idx].classList.add('sel-ko'); btns[q.correct].classList.add('show-ok'); }
+
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'flex';
+  if (isOk) {
+    fb.className = 'feedback ok';
+    document.getElementById('fb-icon').textContent = '✅';
+    document.getElementById('fb-text').textContent = 'Bonne réponse !';
+  } else {
+    fb.className = 'feedback ko';
+    document.getElementById('fb-icon').textContent = '❌';
+    document.getElementById('fb-text').textContent = `Incorrect. Bonne réponse : ${['A','B','C','D'][q.correct]}. ${q.a[q.correct]}`;
+  }
+
+  const gc = document.getElementById('gc' + currentIdx);
+  if (gc) { gc.classList.remove('cur'); gc.classList.add(isOk ? 'ok' : 'ko'); gc.textContent = ['A','B','C','D'][q.correct]; }
+
+  document.getElementById('sb-score').textContent = score;
+  const btnN = document.getElementById('btn-next');
+  btnN.style.display = 'block';
+  btnN.textContent = currentIdx < 49 ? 'Question suivante →' : '🏁 Voir mes résultats';
+}
+
+function nextQ() {
+  currentIdx++;
+  if (currentIdx >= 50) showResults();
+  else showQ();
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.getElementById('result-screen').style.display = 'block';
+  const pct = Math.round((score / 50) * 100);
+  const passed = score >= 41;
+
+  document.getElementById('res-emoji').textContent = passed ? '🎉' : (score >= 35 ? '😐' : '😔');
+  document.getElementById('res-title').textContent = passed ? 'Félicitations !' : (score >= 35 ? 'Presque...' : 'Encore un effort !');
+  document.getElementById('res-sub').textContent = passed ? `Vous avez réussi avec ${score}/50 !` : `Il vous fallait 41/50. Vous avez obtenu ${score}/50.`;
+  document.getElementById('res-big').textContent = score;
+  document.getElementById('res-ok').textContent = score;
+  document.getElementById('res-ko').textContent = 50 - score;
+  document.getElementById('res-pct').textContent = pct + '%';
+
+  const color = passed ? '#27ae60' : (score >= 35 ? '#f39c12' : '#e74c3c');
+  const deg = Math.round((score / 50) * 360);
+  document.getElementById('res-circle').style.background = `conic-gradient(${color} ${deg}deg, rgba(255,255,255,0.05) ${deg}deg)`;
+  document.getElementById('res-big').style.color = color;
+
+  const msgs = {
+    pass: `🏆 Excellent ! ${score}/50 (${pct}%) — Vous maîtrisez bien le code belge ! Continuez à vous entraîner pour consolider vos acquis.`,
+    near: `💪 Vous êtes proche du seuil ! Révisez les erreurs ci-dessous et retentez un test. Vous pouvez le faire !`,
+    fail: `📚 ${score}/50 — Ne vous découragez pas. Relisez la synthèse "Le Permis Belge" et retentez rapidement.`
+  };
+  document.getElementById('res-msg').textContent = passed ? msgs.pass : (score >= 35 ? msgs.near : msgs.fail);
+
+  const list = document.getElementById('review-list');
+  list.innerHTML = '';
+  const errors = userAnswers.filter(a => a && !a.isCorrect);
+  if (!errors.length) {
+    list.innerHTML = '<p style="color:#27ae60;text-align:center;padding:10px">✅ Aucune erreur — Parfait !</p>';
+  } else {
+    errors.forEach(a => {
+      const L = ['A','B','C','D'];
+      const d = document.createElement('div');
+      d.className = 'rev-item';
+      d.innerHTML = `<div class="rev-q"><strong>${a.q.cat}</strong> — ${a.q.q}</div>
+        <div class="rev-yours">❌ Votre réponse : ${L[a.chosen]}. ${a.q.a[a.chosen]}</div>
+        <div class="rev-right">✅ Bonne réponse : ${L[a.correct]}. ${a.q.a[a.correct]}</div>`;
+      list.appendChild(d);
+    });
+  }
+}
+
+function confirmQuit() {
+  if (confirm('Voulez-vous vraiment quitter le test en cours ?')) goHome();
+}
+
+function goHome() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('home-screen').style.display = 'flex';
+}
+</script>
+</body>
+</html>
